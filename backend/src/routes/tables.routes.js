@@ -15,6 +15,15 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+router.post("/bulk", requireRole("Admin", "Manager"), async (req, res, next) => {
+  try {
+    const tables = await tablesService.addTables(req.context, req.body.count);
+    res.status(201).json(tables);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post("/:tableCode/open", requireRole("Admin", "Manager", "Waiter"), async (req, res, next) => {
   try {
     const table = await tablesService.openTable(req.params.tableCode, req.user, req.context);

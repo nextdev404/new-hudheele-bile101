@@ -2,15 +2,13 @@ const http = require("http");
 const { Server } = require("socket.io");
 const app = require("./app");
 const { env } = require("./config/env");
+const { corsOptions } = require("./config/cors");
 const { setIo } = require("./lib/socket");
 const syncService = require("./services/sync.service");
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: env.frontendOrigin,
-    credentials: true,
-  },
+  cors: corsOptions,
 });
 
 setIo(io);

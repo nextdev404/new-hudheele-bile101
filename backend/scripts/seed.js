@@ -10,15 +10,21 @@ const STAFF = [
   { name: "Esther Howard", role: "Waiter", status: "Active", pin: "1234" },
   { name: "Chef Gordon", role: "Chef", status: "Offline", pin: "1234" },
   { name: "Cash Register", role: "Cashier", status: "Active", pin: "1234" },
+  { name: "Guest Customer", role: "Customer", status: "Active", pin: "0000" },
 ];
 
 async function seedStaff() {
   for (const staff of STAFF) {
     const pinHash = await bcrypt.hash(staff.pin, 10);
     await pool.query(
-      `INSERT INTO users(name, role, status, pin_hash)
-       VALUES($1, $2, $3, $4)
-       ON CONFLICT (name) DO UPDATE SET role = EXCLUDED.role, status = EXCLUDED.status`,
+      `INSERT INTO users(name, role, status, pin_hash, tenant_id, branch_id)
+       VALUES($1, $2, $3, $4, 1, 1)
+       ON CONFLICT (name) DO UPDATE
+       SET role = EXCLUDED.role,
+           status = EXCLUDED.status,
+           pin_hash = EXCLUDED.pin_hash,
+           tenant_id = EXCLUDED.tenant_id,
+           branch_id = EXCLUDED.branch_id`,
       [staff.name, staff.role, staff.status, pinHash]
     );
   }

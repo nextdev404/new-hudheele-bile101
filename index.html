@@ -1164,12 +1164,27 @@
           </div>
         </div>
 
+        <!-- Status -->
+        <div id="new-staff-status-container">
+          <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Status</label>
+          <div class="relative">
+            <select id="new-staff-status"
+              class="w-full px-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all appearance-none cursor-pointer">
+              <option value="Active">Active</option>
+              <option value="Offline">Offline</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm"></i>
+          </div>
+        </div>
+
         <!-- Access PIN -->
         <div>
           <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
             data-i18n="modal_pin">Access PIN</label>
-          <input type="text" id="new-staff-pin" value="1234"
+          <input type="password" id="new-staff-pin" value="1234" placeholder="1234"
             class="w-full px-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white font-mono tracking-[0.5em] text-center focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-lg">
+          <p id="new-staff-pin-hint" class="text-xs text-gray-400 mt-1 hidden">Leave blank to keep current PIN when editing.</p>
         </div>
 
         <!-- Buttons -->
@@ -1538,54 +1553,128 @@
       }
     }
 
-    async function syncTablesFromBackend() {
-      if (!authState.accessToken) return;
+    function getLocalTablesMap() {
+      const savedTables = localStorage.getItem('pos_tables');
+      if (!savedTables) return {};
       try {
-        const remoteTables = await apiFetch('/tables', {}, true);
-        if (!Array.isArray(remoteTables)) return;
-
-        remoteTables.forEach((rt) => {
-          const local = tables.find((t) => t.id === rt.id);
-          if (!local) return;
-          local.status = rt.status || local.status;
-          local.lockedBy = rt.lockedBy || null;
-          local.waiterName = rt.waiterName || null;
-          local.name = rt.displayName || local.name;
-        });
+        return Object.fromEntries(JSON.parse(savedTables).map((t) => [t.id, t]));
       } catch (error) {
-        console.warn('Backend table sync skipped:', error.message);
+        return {};
       }
     }
 
     async function syncTablesFromBackend() {
       if (!authState.accessToken) return;
       try {
-        const remoteTables = await apiFetch('/tables', {}, true);
+        let remoteTables = await apiFetch('/tables', {}, true);
         if (!Array.isArray(remoteTables)) return;
 
+        const localMap = getLocalTablesMap();
+        const localCount = Object.keys(localMap).length;
+
+        if (localCount > remoteTables.length) {
+          await apiFetch('/tables/bulk', {
+            method: 'POST',
+            body: JSON.stringify({ count: localCount - remoteTables.length }),
+          }, true);
+          remoteTables = await apiFetch('/tables', {}, true);
+        }
+
+        if (remoteTables.length === 0) return;
+        tables.length = 0;
+
         remoteTables.forEach((rt) => {
-          const local = tables.find((t) => t.id === rt.id);
-          if (!local) return;
-          local.status = rt.status || local.status;
-          local.lockedBy = rt.lockedBy || null;
-          local.waiterName = rt.waiterName || null;
-          local.name = rt.displayName || local.name;
+          const local = localMap[rt.id] || {};
+          const merged = {
+            ...createEmptyTable(rt.id),
+            ...local,
+            id: rt.id,
+            status: local.status || rt.status || STATUS.AVAILABLE,
+            lockedBy: rt.lockedBy ?? local.lockedBy ?? null,
+            waiterName: rt.waiterName ?? local.waiterName ?? null,
+            name: local.name || rt.displayName || 'Available',
+            recallTimer: null,
+          };
+          if (merged.status === STATUS.SENT_WAITING_RECALL) {
+            merged.status = STATUS.OCCUPIED;
+            merged.recallRemaining = 0;
+          }
+          tables.push(merged);
         });
+
+        saveData();
       } catch (error) {
         console.warn('Backend table sync skipped:', error.message);
       }
     }
 
-    // --- STAFF DATA ---
-    let staffList = [
-      { id: 1, name: 'Admin User', role: 'Admin', status: 'Active', pin: '1234', avatar: 'Admin' },
-      { id: 2, name: 'Floyd Miles', role: 'Manager', status: 'Active', pin: '1234', avatar: 'Floyd+Miles' },
-      { id: 3, name: 'Arlene McCoy', role: 'Waiter', status: 'Active', pin: '1234', avatar: 'Arlene+McCoy' },
-      { id: 4, name: 'Esther Howard', role: 'Waiter', status: 'Active', pin: '1234', avatar: 'Esther+Howard' },
-      { id: 5, name: 'Chef Gordon', role: 'Chef', status: 'Offline', pin: '1234', avatar: 'Chef' },
-      { id: 6, name: 'Cash Register', role: 'Cashier', status: 'Active', pin: '1234', avatar: 'Register' },
-      { id: 7, name: 'Guest Customer', role: 'Customer', status: 'Active', pin: '0000', avatar: 'Guest' }
-    ];
+    // --- STAFF DATA (loaded from Supabase via /api/users) ---
+    let staffList = [];
+    let pendingLoginUserId = null;
+
+    function debugLoginLog(hypothesisId, message, data) {
+      // #region agent log
+      fetch('http://127.0.0.1:7424/ingest/d1e17413-a4ea-44e4-8a92-6d4dc6a2a22a', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '8884d8' },
+        body: JSON.stringify({
+          sessionId: '8884d8',
+          runId: 'pre-fix',
+          hypothesisId,
+          location: 'index.html:login',
+          message,
+          data,
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+    }
+
+    function resolveAdminUser() {
+      return staffList.find((u) => u.role === 'Admin' && u.status === 'Active')
+        || staffList.find((u) => u.role === 'Admin');
+    }
+
+    async function syncStaffFromBackend() {
+      try {
+        const remoteStaff = await apiFetch('/users');
+        if (!Array.isArray(remoteStaff)) {
+          debugLoginLog('H4', 'Staff sync returned non-array', { type: typeof remoteStaff });
+          return false;
+        }
+
+        staffList = remoteStaff.map((u) => ({
+          id: u.id,
+          name: u.name,
+          role: u.role,
+          status: u.status,
+          pin: '',
+          avatar: u.avatar || u.name.replace(/ /g, '+'),
+        }));
+        debugLoginLog('H4', 'Staff sync succeeded', { staffCount: staffList.length });
+        return true;
+      } catch (error) {
+        debugLoginLog('H4', 'Staff sync failed', { errorMessage: error.message });
+        console.warn('Backend staff sync skipped:', error.message);
+        return false;
+      }
+    }
+
+    async function loginViaApi(name, pin) {
+      const result = await apiFetch('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ name, pin }),
+      });
+
+      if (result?.accessToken && result?.refreshToken) {
+        authState.accessToken = result.accessToken;
+        authState.refreshToken = result.refreshToken;
+        localStorage.setItem('pos_access_token', result.accessToken);
+        localStorage.setItem('pos_refresh_token', result.refreshToken);
+      }
+
+      return result;
+    }
 
     // ==========================================
     // --- I18N: LANGUAGE SYSTEM ---
@@ -2090,14 +2179,33 @@
     };
 
     // --- TABLE DATA (Upgraded) ---
-    let activeTableId = null; // Changed from 'T4' so Waiters must select a table first
+    let activeTableId = null;
+
+    function createEmptyTable(id) {
+      return {
+        id,
+        name: 'Available',
+        status: STATUS.AVAILABLE,
+        bg: 'bg-gray-100',
+        text: 'text-gray-400',
+        cart: [],
+        lockedBy: null,
+        waiterName: null,
+        openedAt: null,
+        timestamps: {},
+        recallTimer: null,
+        recallRemaining: 0,
+        payRecords: [],
+      };
+    }
+
     const tables = [
-      { id: 'T1', name: 'Available', status: STATUS.AVAILABLE, bg: 'bg-gray-100', text: 'text-gray-400', cart: [], lockedBy: null, waiterName: null, openedAt: null, timestamps: {}, recallTimer: null, recallRemaining: 0, payRecords: [] },
-      { id: 'T2', name: 'Available', status: STATUS.AVAILABLE, bg: 'bg-gray-100', text: 'text-gray-400', cart: [], lockedBy: null, waiterName: null, openedAt: null, timestamps: {}, recallTimer: null, recallRemaining: 0, payRecords: [] },
-      { id: 'T3', name: 'Available', status: STATUS.AVAILABLE, bg: 'bg-gray-100', text: 'text-gray-400', cart: [], lockedBy: null, waiterName: null, openedAt: null, timestamps: {}, recallTimer: null, recallRemaining: 0, payRecords: [] },
-      { id: 'T4', name: 'Available', status: STATUS.AVAILABLE, bg: 'bg-gray-100', text: 'text-gray-400', cart: [], lockedBy: null, waiterName: null, openedAt: null, timestamps: {}, recallTimer: null, recallRemaining: 0, payRecords: [] },
-      { id: 'T5', name: 'Available', status: STATUS.AVAILABLE, bg: 'bg-gray-100', text: 'text-gray-400', cart: [], lockedBy: null, waiterName: null, openedAt: null, timestamps: {}, recallTimer: null, recallRemaining: 0, payRecords: [] },
-      { id: 'T6', name: 'Available', status: STATUS.AVAILABLE, bg: 'bg-gray-100', text: 'text-gray-400', cart: [], lockedBy: null, waiterName: null, openedAt: null, timestamps: {}, recallTimer: null, recallRemaining: 0, payRecords: [] }
+      createEmptyTable('T1'),
+      createEmptyTable('T2'),
+      createEmptyTable('T3'),
+      createEmptyTable('T4'),
+      createEmptyTable('T5'),
+      createEmptyTable('T6'),
     ];
 
     let activeCategory = 'all';
@@ -2153,17 +2261,17 @@
 
       if (savedTables) {
         const parsedTables = JSON.parse(savedTables);
-        // Map saved state back to tables array, removing old timers
-        parsedTables.forEach((pt, i) => {
-          if (tables[i]) {
-            tables[i] = { ...tables[i], ...pt, recallTimer: null };
-            // If it was in RECALL state on reload, just dump it back to OCCUPIED to be safe
-            if (tables[i].status === STATUS.SENT_WAITING_RECALL) {
-              tables[i].status = STATUS.OCCUPIED;
-              tables[i].recallRemaining = 0;
+        if (Array.isArray(parsedTables) && parsedTables.length > 0) {
+          tables.length = 0;
+          parsedTables.forEach((pt) => {
+            const merged = { ...createEmptyTable(pt.id || `T${tables.length + 1}`), ...pt, recallTimer: null };
+            if (merged.status === STATUS.SENT_WAITING_RECALL) {
+              merged.status = STATUS.OCCUPIED;
+              merged.recallRemaining = 0;
             }
-          }
-        });
+            tables.push(merged);
+          });
+        }
       }
       if (savedKitchen) kitchenOrders = JSON.parse(savedKitchen);
       if (savedHistory) orderHistory = JSON.parse(savedHistory);
@@ -2189,10 +2297,12 @@
 
     // Load immediately
     loadData();
+    syncStaffFromBackend();
 
     // --- LOGIN FUNCTIONS ---
     // Attach event listeners defensively once DOM is parsed
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      await syncStaffFromBackend();
       document.querySelectorAll('.role-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.preventDefault();
@@ -2203,9 +2313,10 @@
       });
     });
 
-    function selectLoginRole(role) {
+    async function selectLoginRole(role) {
       console.log('selectLoginRole executed for:', role);
       selectedRole = role;
+      pendingLoginUserId = null;
 
       // Highlight active role button
       document.querySelectorAll('.role-btn').forEach(btn => {
@@ -2231,10 +2342,20 @@
         return;
       }
 
+      if (staffList.length === 0) {
+        await syncStaffFromBackend();
+      }
+
       // For all other roles: populate user dropdown
       const userSelect = document.getElementById('login-user-select');
       const userContainer = document.getElementById('user-selection-container');
       const filteredStaff = staffList.filter(u => u.role.toLowerCase() === role.toLowerCase());
+
+      debugLoginLog('H1', 'Role selected for login', {
+        role,
+        staffCount: staffList.length,
+        filteredCount: filteredStaff.length,
+      });
 
       userSelect.innerHTML = '<option value="" disabled selected>Choose your account</option>';
       filteredStaff.forEach(u => {
@@ -2244,11 +2365,36 @@
         userSelect.appendChild(opt);
       });
 
-      if (filteredStaff.length === 1) {
+      if (role === 'Admin') {
+        // Admin logs in with PIN only — no account picker shown
+        userContainer.classList.add('hidden');
+        const adminUser = resolveAdminUser();
+        pendingLoginUserId = adminUser ? adminUser.id : null;
+        if (adminUser) {
+          userSelect.value = String(adminUser.id);
+        }
+        debugLoginLog('H2', 'Admin role resolved user', {
+          pendingLoginUserId,
+          selectValue: userSelect.value,
+          adminFound: Boolean(adminUser),
+        });
+      } else if (role === 'Waiter' || role === 'Chef') {
+        // Waiter & Chef must pick their account from the list
+        userContainer.classList.remove('hidden');
+        userSelect.value = '';
+        pendingLoginUserId = null;
+      } else if (filteredStaff.length === 1) {
+        pendingLoginUserId = filteredStaff[0].id;
         userSelect.value = filteredStaff[0].id;
         userContainer.classList.add('hidden');
-      } else {
+      } else if (filteredStaff.length > 1) {
         userContainer.classList.remove('hidden');
+        userSelect.value = '';
+        pendingLoginUserId = null;
+      } else {
+        userContainer.classList.add('hidden');
+        userSelect.value = '';
+        pendingLoginUserId = null;
       }
 
       setTimeout(() => {
@@ -2258,7 +2404,7 @@
     }
 
     async function handleLogin() {
-      const userId = document.getElementById('login-user-select').value;
+      let userId = document.getElementById('login-user-select').value;
       const pin = document.getElementById('login-pin').value;
 
       if (!selectedRole) return alert('Select a role first.');
@@ -2270,7 +2416,58 @@
         return;
       }
 
-      if (!userId) return alert('Please select your user account.');
+      if (selectedRole === 'Admin') {
+        if (!pin) return alert('Enter your PIN.');
+
+        if (staffList.length === 0) await syncStaffFromBackend();
+
+        let adminUser = resolveAdminUser();
+        if (!adminUser) {
+          try {
+            const result = await loginViaApi('Admin User', pin);
+            if (result?.user) {
+              await syncStaffFromBackend();
+              return loginUser({
+                id: result.user.id,
+                name: result.user.name,
+                role: result.user.role,
+                status: 'Active',
+                avatar: result.user.name.replace(/ /g, '+'),
+              });
+            }
+          } catch (error) {
+            debugLoginLog('H5', 'Direct admin API login failed', { errorMessage: error.message });
+            return alert(
+              `Login failed: ${error.message}\n\n1) Run backend: cd backend && npm run dev\n2) Open frontend from http://127.0.0.1:5501`
+            );
+          }
+          return alert('No admin account found. Run: cd backend && npm run seed');
+        }
+
+        userId = String(adminUser.id);
+        pendingLoginUserId = adminUser.id;
+        debugLoginLog('H3', 'Admin login user resolution', {
+          userId,
+          pendingLoginUserId,
+          staffCount: staffList.length,
+          adminFound: true,
+        });
+
+        try {
+          const result = await loginViaApi(adminUser.name, pin);
+          if (result?.user) {
+            return loginUser({ ...adminUser, ...result.user });
+          }
+        } catch (error) {
+          return alert(error.message || 'Invalid PIN');
+        }
+        return;
+      } else if (!userId && pendingLoginUserId) {
+        userId = String(pendingLoginUserId);
+      } else if (!userId) {
+        return alert('Please select your user account.');
+      }
+
       if (!pin) return alert('Enter your PIN.');
 
       const userToLogin = staffList.find(u => u.id == userId);
@@ -2280,17 +2477,7 @@
       }
 
       try {
-        const result = await apiFetch('/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({ name: userToLogin.name, pin }),
-        });
-
-        if (result && result.accessToken && result.refreshToken) {
-          authState.accessToken = result.accessToken;
-          authState.refreshToken = result.refreshToken;
-          localStorage.setItem('pos_access_token', result.accessToken);
-          localStorage.setItem('pos_refresh_token', result.refreshToken);
-        }
+        const result = await loginViaApi(userToLogin.name, pin);
 
         if (result && result.user) {
           const mergedUser = { ...userToLogin, ...result.user };
@@ -2323,6 +2510,8 @@
       else document.getElementById('add-product-btn').classList.add('hidden');
 
       await syncCatalogFromBackend();
+      await syncStaffFromBackend();
+      await syncTablesFromBackend();
       setupNav();
       applyLanguage();
       renderCategories();
@@ -2887,7 +3076,9 @@
 
       const nameInput = document.getElementById('new-staff-name');
       const roleInput = document.getElementById('new-staff-role');
+      const statusInput = document.getElementById('new-staff-status');
       const pinInput = document.getElementById('new-staff-pin');
+      const pinHint = document.getElementById('new-staff-pin-hint');
 
       const roleContainer = document.getElementById('new-staff-role-container');
 
@@ -2897,7 +3088,10 @@
         btn.innerText = t('modal_save');
         nameInput.value = staff.name;
         roleInput.value = staff.role;
-        pinInput.value = staff.pin;
+        statusInput.value = staff.status || 'Active';
+        pinInput.value = '';
+        pinInput.placeholder = 'Leave blank to keep current PIN';
+        if (pinHint) pinHint.classList.remove('hidden');
 
         if (staff.role === 'Admin') {
           roleContainer.classList.add('hidden');
@@ -2909,7 +3103,10 @@
         btn.innerText = t('modal_add_btn');
         nameInput.value = '';
         roleInput.value = 'Waiter';
+        statusInput.value = 'Offline';
         pinInput.value = '1234';
+        pinInput.placeholder = '1234';
+        if (pinHint) pinHint.classList.add('hidden');
         roleContainer.classList.remove('hidden');
       }
 
@@ -2928,43 +3125,48 @@
       setTimeout(() => { modal.classList.add('hidden'); editingStaffId = null; }, 300);
     }
 
-    function saveStaff() {
-      const name = document.getElementById('new-staff-name').value;
+    async function saveStaff() {
+      const name = document.getElementById('new-staff-name').value.trim();
       let role = document.getElementById('new-staff-role').value;
-      const pin = document.getElementById('new-staff-pin').value;
+      const status = document.getElementById('new-staff-status').value;
+      const pin = document.getElementById('new-staff-pin').value.trim();
 
-      if (!name || !pin) return;
+      if (!name) return;
+      if (!editingStaffId && !pin) return alert('PIN is required for new staff.');
+      if (currentUser.role !== 'Admin') return alert(t('alert_admin_only_delete'));
 
-      if (editingStaffId) {
-        const index = staffList.findIndex(s => s.id === editingStaffId);
-        if (index !== -1) {
-          // Force role to remain Admin if they are already an Admin to prevent accidental lockout
-          if (staffList[index].role === 'Admin') {
-            role = 'Admin';
-          }
-          staffList[index].name = name;
-          staffList[index].role = role;
-          staffList[index].pin = pin;
-          staffList[index].avatar = name.replace(' ', '+');
-        }
-        showToast(`${role} — ${t('toast_staff_updated')}`, 'success');
-      } else {
-        const newStaff = {
-          id: Date.now(),
-          name: name,
-          role: role,
-          status: 'Offline',
-          pin: pin,
-          avatar: name.replace(' ', '+')
-        };
-        staffList.push(newStaff);
-        showToast(`${role} — ${t('toast_staff_added')}`, 'success');
+      const existing = editingStaffId ? staffList.find((s) => s.id === editingStaffId) : null;
+      if (existing && existing.role === 'Admin') {
+        role = 'Admin';
       }
-      renderStaffTable();
-      closeAddStaffModal();
+
+      const payload = { name, role, status };
+      if (pin) payload.pin = pin;
+
+      try {
+        if (editingStaffId) {
+          await apiFetch(`/users/${editingStaffId}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+          }, true);
+          showToast(`${role} — ${t('toast_staff_updated')}`, 'success');
+        } else {
+          await apiFetch('/users', {
+            method: 'POST',
+            body: JSON.stringify({ ...payload, status: status || 'Offline' }),
+          }, true);
+          showToast(`${role} — ${t('toast_staff_added')}`, 'success');
+        }
+
+        await syncStaffFromBackend();
+        renderStaffTable();
+        closeAddStaffModal();
+      } catch (error) {
+        showToast(error.message || 'Failed to save staff member', 'error');
+      }
     }
 
-    function deleteStaff(id) {
+    async function deleteStaff(id) {
       if (currentUser.role !== 'Admin') return alert(t('alert_admin_only_delete'));
 
       const targetStaff = staffList.find(s => s.id === id);
@@ -2972,9 +3174,15 @@
         return alert(t('alert_admin_cannot_delete_self') || 'Cannot delete Admin accounts.');
       }
 
-      if (confirm(t('confirm_remove_staff'))) {
-        staffList = staffList.filter(s => s.id !== id);
+      if (!confirm(t('confirm_remove_staff'))) return;
+
+      try {
+        await apiFetch(`/users/${id}`, { method: 'DELETE' }, true);
+        await syncStaffFromBackend();
         renderStaffTable();
+        showToast(t('toast_staff_deleted'), 'success');
+      } catch (error) {
+        showToast(error.message || 'Failed to delete staff member', 'error');
       }
     }
 
@@ -3425,9 +3633,9 @@
       setTimeout(() => modal.classList.add('hidden'), 250);
     }
 
-    function confirmAddTable() {
+    async function confirmAddTable() {
       const countStr = document.getElementById('add-table-count').value;
-      const count = parseInt(countStr);
+      const count = parseInt(countStr, 10);
       if (isNaN(count) || count <= 0) {
         showToast(t('toast_invalid_number') || 'Please enter a valid number.', 'error');
         return;
@@ -3435,31 +3643,28 @@
 
       closeAddTableModal();
 
-      // Add 'count' number of tables
-      let nextId = tables.length > 0 ? Math.max(...tables.map(t => parseInt(t.id.replace('T', '')) || 0)) + 1 : 1;
-
-      for (let i = 0; i < count; i++) {
-        tables.push({
-          id: `T${nextId}`,
-          name: 'Available',
-          status: STATUS.AVAILABLE,
-          bg: 'bg-gray-100',
-          text: 'text-gray-400',
-          cart: [],
-          lockedBy: null,
-          waiterName: null,
-          openedAt: null,
-          timestamps: {},
-          recallTimer: null,
-          recallRemaining: 0,
-          payRecords: []
-        });
-        nextId++;
+      try {
+        if (authState.accessToken) {
+          await apiFetch('/tables/bulk', {
+            method: 'POST',
+            body: JSON.stringify({ count }),
+          }, true);
+          await syncTablesFromBackend();
+        } else {
+          let nextId = tables.length > 0
+            ? Math.max(...tables.map((t) => parseInt(String(t.id).replace('T', ''), 10) || 0)) + 1
+            : 1;
+          for (let i = 0; i < count; i++) {
+            tables.push(createEmptyTable(`T${nextId}`));
+            nextId++;
+          }
+          saveData();
+        }
+        renderTablesView();
+        showToast(`${t('table_added')} (${count})`, 'success');
+      } catch (error) {
+        showToast(error.message || 'Failed to add tables', 'error');
       }
-
-      saveData();
-      renderTablesView();
-      showToast(`${t('table_added')} (${count})`, 'success');
     }
 
     // --- ORDERS LOGIC ---

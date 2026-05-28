@@ -1,0 +1,67 @@
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":7},"timestamp":1779978504151}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":7},"timestamp":1779978504562}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":7},"timestamp":1779978505003}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Admin","staffCount":7,"filteredCount":1},"timestamp":1779978505004}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H2","location":"index.html:login","message":"Admin role resolved user","data":{"pendingLoginUserId":"1","selectValue":"1","adminFound":true},"timestamp":1779978505005}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H3","location":"index.html:login","message":"Admin login user resolution","data":{"userId":"1","pendingLoginUserId":"1","staffCount":7,"adminFound":true},"timestamp":1779978506678}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":7},"timestamp":1779978510220}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":6},"timestamp":1779978532777}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978540714}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":4},"timestamp":1779978544214}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":3},"timestamp":1779978547549}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":2},"timestamp":1779978551106}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":1},"timestamp":1779978557087}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":2},"timestamp":1779978574361}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":3},"timestamp":1779978592800}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":4},"timestamp":1779978611100}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978631640}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Waiter","staffCount":5,"filteredCount":1},"timestamp":1779978655062}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Waiter","staffCount":5,"filteredCount":1},"timestamp":1779978655065}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978660088}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978660486}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978660996}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Waiter","staffCount":5,"filteredCount":1},"timestamp":1779978660997}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Admin","staffCount":5,"filteredCount":1},"timestamp":1779978687103}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H2","location":"index.html:login","message":"Admin role resolved user","data":{"pendingLoginUserId":"1","selectValue":"1","adminFound":true},"timestamp":1779978687104}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Admin","staffCount":5,"filteredCount":1},"timestamp":1779978687106}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H2","location":"index.html:login","message":"Admin role resolved user","data":{"pendingLoginUserId":"1","selectValue":"1","adminFound":true},"timestamp":1779978687107}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Chef","staffCount":5,"filteredCount":1},"timestamp":1779978687989}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Chef","staffCount":5,"filteredCount":1},"timestamp":1779978687991}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Manager","staffCount":5,"filteredCount":1},"timestamp":1779978688791}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Manager","staffCount":5,"filteredCount":1},"timestamp":1779978688793}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Cashier","staffCount":5,"filteredCount":1},"timestamp":1779978689371}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Cashier","staffCount":5,"filteredCount":1},"timestamp":1779978689373}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Waiter","staffCount":5,"filteredCount":1},"timestamp":1779978691626}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Waiter","staffCount":5,"filteredCount":1},"timestamp":1779978691629}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978783610}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978784028}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978862530}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978862989}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978900002}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978903224}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978903224}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Waiter","staffCount":5,"filteredCount":1},"timestamp":1779978903225}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Admin","staffCount":5,"filteredCount":1},"timestamp":1779978941517}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H2","location":"index.html:login","message":"Admin role resolved user","data":{"pendingLoginUserId":"1","selectValue":"1","adminFound":true},"timestamp":1779978941517}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Admin","staffCount":5,"filteredCount":1},"timestamp":1779978941519}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H2","location":"index.html:login","message":"Admin role resolved user","data":{"pendingLoginUserId":"1","selectValue":"1","adminFound":true},"timestamp":1779978941519}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H3","location":"index.html:login","message":"Admin login user resolution","data":{"userId":"1","pendingLoginUserId":"1","staffCount":5,"adminFound":true},"timestamp":1779978945296}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H3","location":"index.html:login","message":"Admin login user resolution","data":{"userId":"1","pendingLoginUserId":"1","staffCount":5,"adminFound":true},"timestamp":1779978954235}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978958464}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978991508}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978991930}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Admin","staffCount":5,"filteredCount":1},"timestamp":1779978992016}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H2","location":"index.html:login","message":"Admin role resolved user","data":{"pendingLoginUserId":"1","selectValue":"1","adminFound":true},"timestamp":1779978992016}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Admin","staffCount":5,"filteredCount":1},"timestamp":1779978992038}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H2","location":"index.html:login","message":"Admin role resolved user","data":{"pendingLoginUserId":"1","selectValue":"1","adminFound":true},"timestamp":1779978992038}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H3","location":"index.html:login","message":"Admin login user resolution","data":{"userId":"1","pendingLoginUserId":"1","staffCount":5,"adminFound":true},"timestamp":1779978995489}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779978999094}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779979319791}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779979320199}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779979320671}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H1","location":"index.html:login","message":"Role selected for login","data":{"role":"Admin","staffCount":5,"filteredCount":1},"timestamp":1779979320671}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H2","location":"index.html:login","message":"Admin role resolved user","data":{"pendingLoginUserId":"1","selectValue":"1","adminFound":true},"timestamp":1779979320672}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H3","location":"index.html:login","message":"Admin login user resolution","data":{"userId":"1","pendingLoginUserId":"1","staffCount":5,"adminFound":true},"timestamp":1779979321711}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779979326817}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779979346040}
+{"sessionId":"8884d8","runId":"pre-fix","hypothesisId":"H4","location":"index.html:login","message":"Staff sync succeeded","data":{"staffCount":5},"timestamp":1779979346446}
